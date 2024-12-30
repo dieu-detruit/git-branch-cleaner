@@ -47,6 +47,17 @@ git-branch-cleaner
 - Rust 1.70 or later
 - Git 2.0 or later
 
+## Dependencies and Licenses
+
+This project uses the following open-source libraries:
+
+- [dialoguer](https://github.com/console-rs/dialoguer) (MIT License) - Interactive command-line user interface
+- [console](https://github.com/console-rs/console) (MIT License) - Terminal manipulation library
+- [git2](https://github.com/rust-lang/git2-rs) (MIT/Apache-2.0 License) - Git bindings for Rust
+- [anyhow](https://github.com/dtolnay/anyhow) (MIT/Apache-2.0 License) - Error handling library
+
+All dependencies are licensed under MIT and/or Apache-2.0 licenses, which are compatible with this project's MIT license.
+
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
