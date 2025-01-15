@@ -30,16 +30,20 @@ cargo install --path .
 
 ## Usage
 
-1. Navigate to any Git repository
-2. Run the tool:
+1. Run the tool from anywhere within a Git repository:
 ```bash
 git-branch-cleaner
 ```
 
-3. Use arrow keys (↑/↓) to navigate branches
-4. Press SPACE to select/deselect branches for deletion
-5. Press ENTER to confirm selection
-6. Review the branches to be deleted and confirm the operation
+The tool will automatically:
+- Locate the Git repository root directory
+- Change to that directory
+- List all available branches
+
+2. Use arrow keys (↑/↓) to navigate branches
+3. Press SPACE to select/deselect branches for deletion
+4. Press ENTER to confirm selection
+5. Review the branches to be deleted and confirm the operation
 
 ## Requirements
 

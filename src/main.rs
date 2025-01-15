@@ -1,45 +1,64 @@
 use anyhow::{Context, Result};
-use dialoguer::{MultiSelect, theme::ColorfulTheme, Confirm};
+use dialoguer::{theme::ColorfulTheme, Confirm, MultiSelect};
 use git2::Repository;
+use std::env;
+
+// New function to find Git root directory
+fn find_git_root() -> Result<String> {
+    let repo = Repository::discover(".")?;
+    let path = repo
+        .path() // This gives .git directory
+        .parent() // Go up one level to get the repository root
+        .context("Failed to get repository root")?
+        .to_str()
+        .context("Path contains invalid UTF-8")?
+        .to_string();
+    Ok(path)
+}
 
 fn get_local_branches(repo: &Repository) -> Result<Vec<String>> {
     let branches = repo.branches(Some(git2::BranchType::Local))?;
     let mut branch_names = Vec::new();
-    
+
     for branch in branches {
         let (branch, _) = branch?;
         if let Some(name) = branch.name()? {
             branch_names.push(name.to_string());
         }
     }
-    
+
     Ok(branch_names)
 }
 
 fn delete_branch(repo: &Repository, branch_name: &str) -> Result<()> {
     let mut branch = repo.find_branch(branch_name, git2::BranchType::Local)?;
-    branch.delete().context(format!("Failed to delete branch '{}'", branch_name))?;
+    branch
+        .delete()
+        .context(format!("Failed to delete branch '{}'", branch_name))?;
     Ok(())
 }
 
 fn main() -> Result<()> {
+    // Find and change to repository root
+    let repo_path = find_git_root()?;
+    env::set_current_dir(&repo_path).context("Failed to change to repository root directory")?;
+
     // Open the repository
     let repo = Repository::open(".")?;
-    
+
     // Get list of local branches
-    let branches = get_local_branches(&repo)
-        .context("Failed to get branch list")?;
-    
+    let branches = get_local_branches(&repo).context("Failed to get branch list")?;
+
     // Get current branch (to exclude it from deletion)
     let head = repo.head()?;
     let current_branch = head.shorthand().unwrap_or("HEAD");
-    
+
     // Filter only branches available for deletion
     let available_branches: Vec<String> = branches
         .into_iter()
         .filter(|b| b != current_branch)
         .collect();
-    
+
     if available_branches.is_empty() {
         println!("No branches available for deletion.");
         return Ok(());
@@ -50,7 +69,7 @@ fn main() -> Result<()> {
         .with_prompt("Select branches to delete (Space to select, Enter to confirm)")
         .items(&available_branches)
         .interact()?;
-    
+
     if selections.is_empty() {
         println!("No branches selected.");
         return Ok(());
@@ -61,7 +80,7 @@ fn main() -> Result<()> {
     for &idx in selections.iter() {
         println!("- {}", available_branches[idx]);
     }
-    
+
     let confirmed = Confirm::with_theme(&ColorfulTheme::default())
         .with_prompt("Are you sure you want to delete these branches?")
         .default(false)
@@ -91,7 +110,7 @@ fn main() -> Result<()> {
 
     println!("\nResults:");
     println!("Success: {} branch(es)", success_count);
-    
+
     if !error_branches.is_empty() {
         println!("Failed: {} branch(es)", error_branches.len());
         println!("\nError details:");
